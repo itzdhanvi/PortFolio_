@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dhanvi Ashokan — Data Analyst</title>
+<title>Dhanvi — Creative Developer</title>
+<link rel="icon" type="image/png" href="da-logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
-<link rel="icon" type="image/png" href="da-logo.png">
 <style>
   :root {
     --bg: #0a0a0f;
@@ -202,7 +202,7 @@
   .service-card p { color: var(--muted); font-size: 15px; line-height: 1.7; }
   .service-canvas { width: 64px; height: 64px; }
 
-  /* ── PORTFOLIO ── */
+  /* ── PORTFOLIO CAROUSEL ── */
   #portfolio { background: var(--bg2); }
   .portfolio-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
   .filter-tabs { display: flex; gap: 8px; }
@@ -212,33 +212,70 @@
     font-family: 'DM Sans', sans-serif; transition: all .2s;
   }
   .filter-tab.active, .filter-tab:hover { background: var(--accent); color: #0a0a0f; border-color: var(--accent); font-weight: 600; }
-  .portfolio-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 20px; }
+  .carousel-outer { position: relative; }
+  .carousel-track-wrap {
+    overflow: hidden; border-radius: var(--radius);
+    cursor: grab; user-select: none;
+  }
+  .carousel-track-wrap.dragging { cursor: grabbing; }
+  .carousel-track {
+    display: flex; gap: 24px;
+    transition: transform .55s cubic-bezier(.25,.46,.45,.94);
+    will-change: transform;
+  }
+  .carousel-track.no-transition { transition: none; }
   .portfolio-item {
     position: relative; border-radius: var(--radius); overflow: hidden;
-    aspect-ratio: 4/3; cursor: pointer; border: 1px solid var(--border);
-    transition: transform .3s;
+    flex: 0 0 calc(62% - 12px); aspect-ratio: 16/9;
+    cursor: pointer; border: 1px solid var(--border);
+    transition: border-color .3s, box-shadow .3s;
   }
-  .portfolio-item:first-child { grid-column: span 2; aspect-ratio: 16/7; }
-  .portfolio-item:hover { transform: scale(1.01); }
+  .portfolio-item.active-slide {
+    border-color: rgba(200,245,96,.35);
+    box-shadow: 0 0 40px rgba(200,245,96,.08);
+  }
   .portfolio-canvas { width: 100%; height: 100%; display: block; }
   .portfolio-overlay {
     position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(10,10,15,.95) 0%, transparent 60%);
-    padding: 28px; display: flex; flex-direction: column; justify-content: flex-end;
-    opacity: 0; transition: opacity .3s;
+    background: linear-gradient(to top, rgba(10,10,15,.97) 0%, rgba(10,10,15,.25) 55%, transparent 80%);
+    padding: 24px 28px; display: flex; flex-direction: column; justify-content: flex-end;
   }
-  .portfolio-item:hover .portfolio-overlay { opacity: 1; }
-  .portfolio-cat { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .portfolio-name { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
-  .portfolio-desc { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .portfolio-cat { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .portfolio-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+  .portfolio-desc {
+    color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.5;
+    max-height: 0; overflow: hidden;
+    transition: max-height .4s ease, opacity .4s ease; opacity: 0;
+  }
+  .portfolio-item.active-slide .portfolio-desc { max-height: 60px; opacity: 1; }
   .portfolio-arrow {
-    position: absolute; top: 20px; right: 20px;
-    width: 40px; height: 40px; background: var(--accent); border-radius: 50%;
+    position: absolute; top: 18px; right: 18px;
+    width: 38px; height: 38px; background: var(--accent); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #0a0a0f; font-size: 16px; transform: translate(10px,-10px);
-    opacity: 0; transition: all .3s;
+    color: #0a0a0f; font-size: 15px; text-decoration: none;
+    opacity: 0; transform: translate(8px,-8px); transition: all .3s;
   }
-  .portfolio-item:hover .portfolio-arrow { opacity: 1; transform: translate(0,0); }
+  .portfolio-item.active-slide .portfolio-arrow { opacity: 1; transform: translate(0,0); }
+  .carousel-controls {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 28px;
+  }
+  .carousel-dots { display: flex; gap: 8px; align-items: center; }
+  .carousel-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); border: 1px solid rgba(255,255,255,.15);
+    cursor: pointer; transition: all .3s;
+  }
+  .carousel-dot.active { background: var(--accent); width: 24px; border-radius: 4px; border-color: var(--accent); }
+  .carousel-arrows { display: flex; gap: 10px; }
+  .carousel-btn {
+    width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--card); color: var(--fg); font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: all .2s;
+  }
+  .carousel-btn:hover { border-color: var(--accent); color: var(--accent); transform: scale(1.08); }
+  .carousel-counter { font-family: 'Syne', sans-serif; font-size: 13px; color: var(--muted); }
+  .carousel-counter span { color: var(--accent); font-weight: 700; }
 
   /* ── TESTIMONIALS ── */
   #testimonials { background: var(--bg); }
@@ -323,8 +360,7 @@
     .hero-visual { display: none; }
     .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 40px; }
     .services-grid { grid-template-columns: 1fr; }
-    .portfolio-grid { grid-template-columns: 1fr; }
-    .portfolio-item:first-child { grid-column: span 1; }
+    .portfolio-item { flex: 0 0 85%; }
     .testi-grid { grid-template-columns: 1fr; }
     .services-header { flex-direction: column; align-items: flex-start; gap: 20px; }
     .portfolio-header { flex-direction: column; align-items: flex-start; gap: 20px; }
@@ -351,7 +387,7 @@
 
 <!-- NAV -->
 <nav id="navbar">
-  <a href="#hero" class="nav-logo">DA<span>.</span></a>
+  <a href="#hero" class="nav-logo">DV<span>.</span></a>
   <ul class="nav-links">
     <li><a href="#hero">Home</a></li>
     <li><a href="#about">About</a></li>
@@ -367,26 +403,26 @@
 <section id="hero">
   <canvas class="hero-bg-canvas" id="heroBg"></canvas>
   <div class="hero-content">
-    <div class="hero-eyebrow reveal">Hi, I'm Dhanvi Ashokan</div>
-    <h1 class="hero-title reveal reveal-delay-1">Next-Level <em>Data</em> Analyst.</h1>
-    <p class="hero-desc reveal reveal-delay-2">I turn messy data into clear stories that drive decisions — from raw numbers to insights that move businesses forward.</p>
+    <div class="hero-eyebrow reveal">Hi, I'm Dhanvi</div>
+    <h1 class="hero-title reveal reveal-delay-1">Building Things for the <em>Web.</em></h1>
+    <p class="hero-desc reveal reveal-delay-2">I craft web experiences that blend clean code with thoughtful design — from AI-powered apps to responsive blogs and interactive tools.</p>
     <div class="hero-actions reveal reveal-delay-3">
       <a href="#portfolio" class="btn-primary">View My Work <span>→</span></a>
       <a href="#contact" class="btn-ghost">Get In Touch</a>
     </div>
     <div class="hero-socials reveal reveal-delay-3">
-      <a href="https://github.com/itzdhanvi" title="GitHub">
+      <a href="https://github.com/itzdhanvi" target="_blank" title="GitHub">
         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
       </a>
-      <!-- <a href="#" title="Twitter/X">
+      <a href="#" title="Twitter/X">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      </a> -->
-      <a href="https://www.linkedin.com/in/dhanviashokan/" title="LinkedIn">
+      </a>
+      <a href="#" title="LinkedIn">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
-      <!-- <a href="#" title="Dribbble">
+      <a href="#" title="Dribbble">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.017-8.04 6.39 1.73 1.358 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4-.806zm-9.84-2.58c.232-.4 3.045-5.055 8.332-6.765.135-.045.27-.084.405-.12-.26-.585-.54-1.167-.832-1.74C7.17 11.775 2.206 11.71 1.756 11.7l-.004.312c0 2.633.998 5.037 2.634 6.855zm-2.42-8.955c.46.008 4.683.026 9.477-1.248-1.698-3.018-3.53-5.558-3.8-5.928-2.868 1.35-5.01 3.99-5.676 7.176zM9.6 2.052c.282.38 2.145 2.914 3.822 6 3.645-1.365 5.19-3.44 5.373-3.702-1.81-1.61-4.19-2.586-6.795-2.586-.477 0-.945.04-1.4.112zm13.44 9.21c-.236 0-4.196-.17-7.775 1.048-.032-.07-.063-.14-.095-.21 3.45-1.31 5.21-3.12 5.405-3.33.58.86.996 1.816 1.247 2.836.072.44.173.892.218 1.36z"/></svg>
-      </a> -->
+      </a>
     </div>
   </div>
   <div class="hero-visual">
@@ -399,16 +435,16 @@
 <!-- STATS BAR -->
 <div class="stats-bar" style="margin: 0 60px; position: relative; z-index: 2;">
   <div class="stat">
-    <div class="stat-num" data-target="1">0</div>
-    <div class="stat-label">Year of Experience</div>
+    <div class="stat-num" data-target="8">0</div>
+    <div class="stat-label">Years of Experience</div>
   </div>
   <div class="stat">
-    <div class="stat-num" data-target="6" data-suffix="+">0</div>
+    <div class="stat-num" data-target="120" data-suffix="+">0</div>
     <div class="stat-label">Projects Completed</div>
   </div>
   <div class="stat">
-    <div class="stat-num" data-target="100" data-suffix="%">0</div>
-    <div class="stat-label">Dedication to Quality</div>
+    <div class="stat-num" data-target="48" data-suffix="K">0</div>
+    <div class="stat-label">Happy Clients</div>
   </div>
 </div>
 
@@ -422,36 +458,24 @@
       <div class="about-badge">✦ Available for hire</div>
     </div>
     <div class="about-text reveal reveal-delay-1">
-  <div class="section-label">About Me</div>
-  <h2 class="section-title">Transforming data into actionable insights.</h2>
-
-  <p>
-    I'm a Data Analyst with a background in Frontend Web Development and 1 year of experience building responsive web applications and data-driven solutions.
-  </p>
-
-  <p>
-    My expertise lies in collecting, cleaning, analyzing, and visualizing data to uncover trends and support business decision-making. My frontend experience helps me present complex insights through intuitive dashboards and user-friendly interfaces.
-  </p>
-
-  <p>
-    I'm passionate about turning raw data into meaningful stories using analytics, visualization, and problem-solving techniques. I'm continuously learning new tools and methodologies to enhance my analytical capabilities.
-  </p>
-
-  <div class="skills-list">
-    <span class="skill-tag">Python</span>
-    <span class="skill-tag">SQL</span>
-    <span class="skill-tag">Power BI</span>
-    <span class="skill-tag">Excel</span>
-    <span class="skill-tag">Pandas</span>
-    <span class="skill-tag">NumPy</span>
-    <span class="skill-tag">Data Visualization</span>
-    <span class="skill-tag">Statistics</span>
-    <span class="skill-tag">React.js</span>
-    <span class="skill-tag">Angular</span>
-  </div>
-  <a href="#contact" class="btn-primary" style="margin-top:32px;display:inline-flex">
-    Let's Connect →
-  </a>
+      <div class="section-label">About Me</div>
+      <h2 class="section-title">Crafting digital experiences with precision.</h2>
+      <p>I'm Dhanvi — a developer who loves building things for the web and beyond. From AI-powered plant disease detectors to cozy blog platforms and e-commerce storefronts, I enjoy turning ideas into working software.</p>
+      <p>I work across the stack — designing responsive UIs in HTML/CSS/JS and building intelligent backends in Python, with a growing interest in machine learning and computer vision.</p>
+      <p>When I'm not coding, you'll find me exploring creative project ideas, contributing to open source, or brewing coffee while planning the next build.</p>
+      <div class="skills-list">
+        <span class="skill-tag">HTML / CSS</span>
+        <span class="skill-tag">JavaScript</span>
+        <span class="skill-tag">Python</span>
+        <span class="skill-tag">Machine Learning</span>
+        <span class="skill-tag">CNN / AI</span>
+        <span class="skill-tag">Responsive Design</span>
+        <span class="skill-tag">LocalStorage APIs</span>
+        <span class="skill-tag">Tkinter / GUI</span>
+        <span class="skill-tag">Git & GitHub</span>
+        <span class="skill-tag">PWA</span>
+      </div>
+      <a href="#contact" class="btn-primary" style="margin-top:32px;display:inline-flex">Let's Work Together →</a>
     </div>
   </div>
 </section>
@@ -461,59 +485,35 @@
   <div class="services-header">
     <div>
       <div class="section-label reveal">What I Do</div>
-      <h2 class="section-title reveal reveal-delay-1">My Core Expertise</h2>
-      <p class="section-sub reveal reveal-delay-2">
-        I help organizations make data-driven decisions by transforming raw data into meaningful insights and actionable strategies.
-      </p>
+      <h2 class="section-title reveal reveal-delay-1">My Quality Services</h2>
+      <p class="section-sub reveal reveal-delay-2">I bring a holistic approach to every project — strategy, design, and development under one roof.</p>
     </div>
   </div>
-
   <div class="services-grid">
-    
     <div class="service-card reveal">
       <div class="service-num">01</div>
-      <div class="service-icon-wrap">
-        <canvas class="service-canvas" id="svc1" width="64" height="64"></canvas>
-      </div>
-      <h3>Data Analysis</h3>
-      <p>
-        Cleaning, transforming, and analyzing datasets to identify trends, patterns, and opportunities that support business growth.
-      </p>
+      <div class="service-icon-wrap"><canvas class="service-canvas" id="svc1" width="64" height="64"></canvas></div>
+      <h3>UI/UX Design</h3>
+      <p>Designing interfaces that feel natural and effortless. From wireframes to polished prototypes, I create user journeys that convert and delight.</p>
     </div>
-
     <div class="service-card reveal reveal-delay-1">
       <div class="service-num">02</div>
-      <div class="service-icon-wrap">
-        <canvas class="service-canvas" id="svc2" width="64" height="64"></canvas>
-      </div>
-      <h3>Dashboard Development</h3>
-      <p>
-        Creating interactive dashboards and reports using Power BI and Excel to communicate insights clearly and effectively.
-      </p>
+      <div class="service-icon-wrap"><canvas class="service-canvas" id="svc2" width="64" height="64"></canvas></div>
+      <h3>Frontend Development</h3>
+      <p>Building fast, accessible, and maintainable code. Performance-first development with React, Next.js, and modern CSS that scales.</p>
     </div>
-
     <div class="service-card reveal reveal-delay-2">
       <div class="service-num">03</div>
-      <div class="service-icon-wrap">
-        <canvas class="service-canvas" id="svc3" width="64" height="64"></canvas>
-      </div>
-      <h3>Data Visualization</h3>
-      <p>
-        Turning complex datasets into intuitive visual stories through charts, graphs, and KPI-driven reporting solutions.
-      </p>
+      <div class="service-icon-wrap"><canvas class="service-canvas" id="svc3" width="64" height="64"></canvas></div>
+      <h3>API & Backend</h3>
+      <p>Architecting robust APIs and backend services. REST, GraphQL, serverless — I connect the dots between your frontend and your data.</p>
     </div>
-
     <div class="service-card reveal reveal-delay-3">
       <div class="service-num">04</div>
-      <div class="service-icon-wrap">
-        <canvas class="service-canvas" id="svc4" width="64" height="64"></canvas>
-      </div>
-      <h3>Business Insights</h3>
-      <p>
-        Leveraging SQL, Python, and statistical analysis to uncover actionable insights and support strategic decision-making.
-      </p>
+      <div class="service-icon-wrap"><canvas class="service-canvas" id="svc4" width="64" height="64"></canvas></div>
+      <h3>Motion & Interaction</h3>
+      <p>Bringing interfaces to life with purposeful animation. Micro-interactions, page transitions, and scroll-driven experiences that wow.</p>
     </div>
-
   </div>
 </section>
 
@@ -521,188 +521,194 @@
 <section id="portfolio">
   <div class="portfolio-header">
     <div>
-      <div class="section-label reveal">Recent Works</div>
+      <div class="section-label reveal">GitHub Projects</div>
       <h2 class="section-title reveal reveal-delay-1">Selected Projects</h2>
     </div>
-    <!-- <div class="filter-tabs reveal reveal-delay-2">
-      <button class="filter-tab active">All</button>
-      <button class="filter-tab">Data Science</button>
-      <button class="filter-tab">AI/ML</button>
-      <button class="filter-tab">Frontend</button>
-    </div> -->
+    <div class="filter-tabs reveal reveal-delay-2">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="ai">AI/ML</button>
+      <button class="filter-tab" data-filter="web">Web</button>
+      <button class="filter-tab" data-filter="python">Python</button>
+    </div>
   </div>
 
-  <div class="portfolio-grid">
-    <div class="portfolio-item reveal">
-      <canvas class="portfolio-canvas" id="port1"></canvas>
-      <div class="portfolio-overlay">
-        <div class="portfolio-cat">AI / Machine Learning</div>
-        <div class="portfolio-name">Plant Disease Prediction</div>
-        <div class="portfolio-desc">A transfer learning project focused on predicting plant diseases using AI and data science techniques.</div>
+  <div class="carousel-outer reveal">
+    <div class="carousel-track-wrap" id="carouselWrap">
+      <div class="carousel-track" id="carouselTrack">
+
+        <div class="portfolio-item active-slide" data-tags="ai">
+          <canvas class="portfolio-canvas" id="port1"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">AI / ML · HTML · Python · ⭐ 1 · 🍴 4</div>
+            <div class="portfolio-name">PlantCare-AI</div>
+            <div class="portfolio-desc">AI-powered plant disease detection — trained CNN with a browser-based HTML frontend and Python backend for real-time diagnosis.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/PlantCare-AI" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
+        <div class="portfolio-item" data-tags="web">
+          <canvas class="portfolio-canvas" id="port2"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">Web · JS · HTML · CSS</div>
+            <div class="portfolio-name">The Coffee Table Diary</div>
+            <div class="portfolio-desc">Responsive blog platform with auth, search, upload, and a warm coffee-themed animated UI for curious minds.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/The-Coffee-Table-Diary" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
+        <div class="portfolio-item" data-tags="web">
+          <canvas class="portfolio-canvas" id="port3"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">Web · JavaScript</div>
+            <div class="portfolio-name">ThreadVibe Hoodies</div>
+            <div class="portfolio-desc">E-commerce storefront with dynamic product listings, cart functionality, and a bold modern UI in vanilla JS.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/ThreadVibe-Hoodies" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
+        <div class="portfolio-item" data-tags="python">
+          <canvas class="portfolio-canvas" id="port4"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">Game · Python</div>
+            <div class="portfolio-name">Sliding Tile Puzzle</div>
+            <div class="portfolio-desc">Classic sliding-tile puzzle game in Python with an algorithmic solver, GUI, and support for multiple grid sizes.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/Sliding-Tile" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
+        <div class="portfolio-item" data-tags="python">
+          <canvas class="portfolio-canvas" id="port5"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">Security · Python</div>
+            <div class="portfolio-name">Password Manager</div>
+            <div class="portfolio-desc">Encrypted local password manager with master-password protection and a clean terminal/GUI interface.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/Password-Manager" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
+        <div class="portfolio-item" data-tags="web">
+          <canvas class="portfolio-canvas" id="port6"></canvas>
+          <div class="portfolio-overlay">
+            <div class="portfolio-cat">Web · HTML · Portfolio</div>
+            <div class="portfolio-name">Portfolio Website</div>
+            <div class="portfolio-desc">Personal portfolio site with a responsive layout showcasing projects, skills, and contact details.</div>
+          </div>
+          <a href="https://github.com/itzdhanvi/PortFolio_" target="_blank" class="portfolio-arrow">↗</a>
+        </div>
+
       </div>
-      <div class="portfolio-arrow">↗</div>
     </div>
 
-    <div class="portfolio-item reveal reveal-delay-1">
-      <canvas class="portfolio-canvas" id="port2"></canvas>
-      <div class="portfolio-overlay">
-        <div class="portfolio-cat">Artificial Intelligence</div>
-        <div class="portfolio-name">How AI Works</div>
-        <div class="portfolio-desc">A beginner-friendly article explaining how AI learns from data, recognizes patterns, and improves over time.</div>
+    <!-- controls -->
+    <div class="carousel-controls">
+      <div class="carousel-dots" id="carouselDots"></div>
+      <div class="carousel-counter"><span id="carouselCurrent">1</span> / <span id="carouselTotal">6</span></div>
+      <div class="carousel-arrows">
+        <button class="carousel-btn" id="carouselPrev" aria-label="Previous">←</button>
+        <button class="carousel-btn" id="carouselNext" aria-label="Next">→</button>
       </div>
-      <div class="portfolio-arrow">↗</div>
-    </div>
-
-    <div class="portfolio-item reveal reveal-delay-2">
-      <canvas class="portfolio-canvas" id="port3"></canvas>
-      <div class="portfolio-overlay">
-        <div class="portfolio-cat">Frontend Development</div>
-        <div class="portfolio-name">HTML & CSS Project Challenge</div>
-        <div class="portfolio-desc">A collection of responsive frontend projects including sign-up forms, navigation bars, contact sections, and landing pages.</div>
-      </div>
-      <div class="portfolio-arrow">↗</div>
     </div>
   </div>
 </section>
 
 <!-- TESTIMONIALS -->
 <section id="testimonials">
-  <div class="section-label reveal">Recommendations</div>
-  <h2 class="section-title reveal reveal-delay-1">What Others Say</h2>
-
+  <div class="section-label reveal">Kind Words</div>
+  <h2 class="section-title reveal reveal-delay-1">What Clients Say</h2>
   <div class="testi-grid">
-
     <div class="testi-card reveal">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">
-        "Dhanvi consistently delivered high-quality work, quickly adapted to new challenges, and exceeded expectations with her dedication and professionalism."
-      </p>
+      <p class="testi-quote">"Alex transformed our outdated platform into a product our whole team is proud of. The attention to detail and commitment to quality is unlike anything I've seen."</p>
       <div class="testi-author">
         <div class="testi-avatar"><canvas id="av1" width="44" height="44"></canvas></div>
-        <div>
-          <div class="testi-name">DZero Security Solutions</div>
-          <div class="testi-role">Internship Feedback</div>
-        </div>
+        <div><div class="testi-name">Sarah Chen</div><div class="testi-role">CEO, Luminary Inc.</div></div>
       </div>
     </div>
-
     <div class="testi-card reveal reveal-delay-1">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">
-        "A proactive learner and excellent team player who consistently demonstrated strong problem-solving skills and attention to detail."
-      </p>
+      <p class="testi-quote">"Delivered a flawless rebrand and website in record time. Every stakeholder presentation left the room speechless. Will work with Alex again without hesitation."</p>
       <div class="testi-author">
         <div class="testi-avatar"><canvas id="av2" width="44" height="44"></canvas></div>
-        <div>
-          <div class="testi-name">Aries Engineers</div>
-          <div class="testi-role">Web Development Internship</div>
-        </div>
+        <div><div class="testi-name">Marcus Webb</div><div class="testi-role">Creative Director, Novara</div></div>
       </div>
     </div>
-
     <div class="testi-card reveal reveal-delay-2">
       <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">
-        "Her adaptability, work ethic, and positive attitude make her a valuable asset to any team. I would gladly work with her again."
-      </p>
+      <p class="testi-quote">"The performance improvements alone justified the investment. Our conversion rate jumped 34% after the redesign. Exceptional technical and design skills combined."</p>
       <div class="testi-author">
         <div class="testi-avatar"><canvas id="av3" width="44" height="44"></canvas></div>
-        <div>
-          <div class="testi-name">JP Technologies</div>
-          <div class="testi-role">Recommendation Letter</div>
-        </div>
+        <div><div class="testi-name">Priya Sharma</div><div class="testi-role">Product Lead, Pulse</div></div>
       </div>
     </div>
-
   </div>
 </section>
 
 <!-- CONTACT -->
 <section id="contact">
   <div class="section-label reveal">Get In Touch</div>
-  <h2 class="section-title reveal reveal-delay-1">
-    Let's Turn Data Into <em style="font-style:normal;color:var(--accent)">Insights</em>
-  </h2>
-
+  <h2 class="section-title reveal reveal-delay-1">Let's Build Something <em style="font-style:normal;color:var(--accent)">Great</em></h2>
   <div class="contact-grid">
     <div class="contact-info reveal">
-      <p>
-        I'm actively seeking Data Analyst opportunities and am open to discussing
-        data-driven projects, analytics roles, and professional collaborations.
-      </p>
-
+      <p>Have a project in mind? I'm available for select freelance projects and full-time opportunities. Let's talk.</p>
       <div class="contact-items">
         <div class="contact-item">
           <div class="contact-item-icon">📧</div>
           <div class="contact-item-text">
             <small>Email</small>
-            <span>dhanviashokan@gmail.com</span>
+            <span>itzdhanvi@github.com</span>
           </div>
         </div>
-
         <div class="contact-item">
           <div class="contact-item-icon">📍</div>
           <div class="contact-item-text">
             <small>Location</small>
-            <span>Pune, India</span>
+            <span>Berlin, Germany · Remote Worldwide</span>
           </div>
         </div>
-
         <div class="contact-item">
-          <div class="contact-item-icon">💼</div>
+          <div class="contact-item-icon">⏱️</div>
           <div class="contact-item-text">
-            <small>Open To</small>
-            <span>Data Analyst • Business Analyst • BI Analyst Roles</span>
+            <small>Response time</small>
+            <span>Within 24 hours</span>
           </div>
         </div>
       </div>
     </div>
-
-    <form class="contact-form reveal reveal-delay-1" action="https://api.web3forms.com/submit" method="POST">
-      <input type="hidden" name="access_key" value="913c5f1f-73e8-42e9-b542-c6cb7e284d63">
-      <input type="hidden" name="subject" value="New Portfolio Contact Message">
-      <input type="hidden" name="from_name" value="Dhanvi Ashokan Portfolio">
-
+    <div class="contact-form reveal reveal-delay-1">
       <div class="form-row">
         <div class="form-field">
           <label>Full Name</label>
-          <input type="text" name="name" placeholder="Your Name" required>
+          <input type="text" placeholder="John Doe">
         </div>
-
         <div class="form-field">
           <label>Email Address</label>
-          <input type="email" name="email" placeholder="your@email.com" required>
+          <input type="email" placeholder="john@company.com">
         </div>
       </div>
-
       <div class="form-field">
         <label>Subject</label>
-        <input type="text" name="message_subject" placeholder="Job Opportunity / Collaboration" required>
+        <input type="text" placeholder="Project Collaboration">
       </div>
-
       <div class="form-field">
         <label>Message</label>
-        <textarea name="message" placeholder="Let's discuss how data can drive better decisions..." required></textarea>
+        <textarea placeholder="Tell me about your project…"></textarea>
       </div>
-
-      <button class="btn-primary" type="submit" style="border:none;cursor:pointer;font-size:14px;">
-        Send Message →
-      </button>
-    </form>
+      <button class="btn-primary" style="border:none;cursor:pointer;font-size:14px;">Send Message →</button>
+    </div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
-  <small>© 2026 Dhanvi Ashokan. Crafted with care.</small>
+  <small>© 2025 Dhanvi. Crafted with care.</small>
   <div class="footer-socials">
-    <a href="https://github.com/itzdhanvi">
+    <a href="#">
       <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
     </a>
-    <!-- <a href="#">
+    <a href="#">
       <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-    </a> -->
-    <a href="https://www.linkedin.com/in/dhanviashokan/">
+    </a>
+    <a href="#">
       <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
     </a>
   </div>
@@ -741,13 +747,143 @@ window.addEventListener('scroll', () => {
   $('navbar').classList.toggle('scrolled', window.scrollY > 60);
 });
 
-// ─────── FILTER TABS ───────
-document.querySelectorAll('.filter-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+// ─────── CAROUSEL ───────
+(function initCarousel() {
+  const track      = $('carouselTrack');
+  const wrap       = $('carouselWrap');
+  const dotsWrap   = $('carouselDots');
+  const btnPrev    = $('carouselPrev');
+  const btnNext    = $('carouselNext');
+  const counterEl  = $('carouselCurrent');
+  const totalEl    = $('carouselTotal');
+
+  const allSlides  = () => Array.from(track.querySelectorAll('.portfolio-item'));
+  let visibleSlides = allSlides();
+  let current = 0;
+  let startX = 0, isDragging = false, dragDelta = 0;
+
+  // Build dots
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    visibleSlides.forEach((_, i) => {
+      const d = document.createElement('button');
+      d.className = 'carousel-dot' + (i === current ? ' active' : '');
+      d.setAttribute('aria-label', `Go to slide ${i+1}`);
+      d.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(d);
+    });
+    totalEl.textContent = visibleSlides.length;
+  }
+
+  function getSlideWidth() {
+    const s = visibleSlides[0];
+    if (!s) return 0;
+    return s.offsetWidth + 24; // gap
+  }
+
+  function updateTrack(animate = true) {
+    if (!animate) track.classList.add('no-transition');
+    const offset = current * getSlideWidth();
+    track.style.transform = `translateX(-${offset}px)`;
+    if (!animate) requestAnimationFrame(() => track.classList.remove('no-transition'));
+
+    // active slide class
+    visibleSlides.forEach((s, i) => s.classList.toggle('active-slide', i === current));
+
+    // dots
+    dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) => d.classList.toggle('active', i === current));
+
+    counterEl.textContent = current + 1;
+    btnPrev.disabled = current === 0;
+    btnNext.disabled = current >= visibleSlides.length - 1;
+  }
+
+  function goTo(idx) {
+    current = Math.max(0, Math.min(idx, visibleSlides.length - 1));
+    updateTrack();
+  }
+
+  btnPrev.addEventListener('click', () => goTo(current - 1));
+  btnNext.addEventListener('click', () => goTo(current + 1));
+
+  // keyboard
+  document.addEventListener('keydown', e => {
+    if (!wrap.closest('section').getBoundingClientRect().top < window.innerHeight) return;
+    if (e.key === 'ArrowLeft') goTo(current - 1);
+    if (e.key === 'ArrowRight') goTo(current + 1);
   });
-});
+
+  // touch / drag
+  function onPointerDown(e) {
+    isDragging = true; dragDelta = 0;
+    startX = (e.touches ? e.touches[0].clientX : e.clientX);
+    wrap.classList.add('dragging');
+    track.classList.add('no-transition');
+  }
+  function onPointerMove(e) {
+    if (!isDragging) return;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    dragDelta = x - startX;
+    const offset = current * getSlideWidth() - dragDelta;
+    track.style.transform = `translateX(-${offset}px)`;
+  }
+  function onPointerUp() {
+    if (!isDragging) return;
+    isDragging = false;
+    wrap.classList.remove('dragging');
+    track.classList.remove('no-transition');
+    if (dragDelta < -60) goTo(current + 1);
+    else if (dragDelta > 60) goTo(current - 1);
+    else updateTrack();
+  }
+  wrap.addEventListener('mousedown', onPointerDown);
+  wrap.addEventListener('touchstart', onPointerDown, {passive:true});
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('touchmove', onPointerMove, {passive:true});
+  window.addEventListener('mouseup', onPointerUp);
+  window.addEventListener('touchend', onPointerUp);
+
+  // auto-play
+  let autoPlay = setInterval(() => {
+    if (current < visibleSlides.length - 1) goTo(current + 1);
+    else goTo(0);
+  }, 4000);
+  wrap.addEventListener('mouseenter', () => clearInterval(autoPlay));
+  wrap.addEventListener('mouseleave', () => {
+    autoPlay = setInterval(() => {
+      if (current < visibleSlides.length - 1) goTo(current + 1);
+      else goTo(0);
+    }, 4000);
+  });
+
+  // reset track to show only visible slides
+  function applyFilter(filter) {
+    allSlides().forEach(s => {
+      const tags = s.dataset.tags || '';
+      const show = filter === 'all' || tags.includes(filter);
+      s.style.display = show ? '' : 'none';
+    });
+    visibleSlides = allSlides().filter(s => s.style.display !== 'none');
+    current = 0;
+    track.style.transform = 'translateX(0)';
+    buildDots();
+    updateTrack(false);
+  }
+
+  // filter tabs
+  document.querySelectorAll('.filter-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilter(btn.dataset.filter || 'all');
+    });
+  });
+
+  // init
+  buildDots();
+  updateTrack(false);
+  window.addEventListener('resize', () => updateTrack(false));
+})();
 
 // ─────── HAMBURGER ───────
 $('hamburger').addEventListener('click', () => {
@@ -1126,9 +1262,12 @@ function drawMotionIcon(ctx,t){
 // ─────── PORTFOLIO CANVASES ───────
 function portfolioCanvases() {
   [
-    { id:'port1', fn: drawPortfolio1 },
-    { id:'port2', fn: drawPortfolio2 },
-    { id:'port3', fn: drawPortfolio3 },
+    { id:'port1', fn: drawPlantCareAI },
+    { id:'port2', fn: drawCoffeeDiary },
+    { id:'port3', fn: drawThreadVibe },
+    { id:'port4', fn: drawSlidingTile },
+    { id:'port5', fn: drawPasswordMgr },
+    { id:'port6', fn: drawPortfolioSite },
   ].forEach(({id,fn})=>{
     const c=$(id); if(!c)return;
     const ctx=c.getContext('2d');
@@ -1144,115 +1283,396 @@ function portfolioCanvases() {
   });
 }
 
-function drawPortfolio1(ctx,W,H,t){
+// 1. PlantCare-AI: leaf network + neural scan lines
+function drawPlantCareAI(ctx,W,H,t){
   ctx.clearRect(0,0,W,H);
-  // dark bg
   const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#0a0f1e'); bg.addColorStop(1,'#050a12');
+  bg.addColorStop(0,'#061209'); bg.addColorStop(1,'#0a1a0a');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // Grid lines
-  ctx.strokeStyle='rgba(200,245,96,0.06)'; ctx.lineWidth=1;
-  for(let x=0;x<W;x+=60){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(let y=0;y<H;y+=60){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-  // animated bars chart
-  const bars=[.6,.85,.4,.95,.7,.55,.8,.65];
-  bars.forEach((h,i)=>{
-    const phase=t*.02+i*.4;
-    const bh=(h+.1*Math.sin(phase))*H*.55;
-    const x=W*.15+i*(W*.7/bars.length);
-    const bw=W*.07;
-    const grad=ctx.createLinearGradient(0,H*.75-bh,0,H*.75);
-    grad.addColorStop(0,'rgba(200,245,96,.9)');
-    grad.addColorStop(1,'rgba(200,245,96,.1)');
-    ctx.fillStyle=grad;
-    ctx.beginPath();
-    ctx.roundRect(x,H*.75-bh,bw,bh,4);
-    ctx.fill();
-  });
-  // glowing line
+
+  // subtle grid
+  ctx.strokeStyle='rgba(100,220,80,0.04)'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  // draw animated leaf shape (central)
+  const leafCx=W/2, leafCy=H/2;
+  const leafScale=Math.min(W,H)*0.28;
+  ctx.save();
+  ctx.translate(leafCx,leafCy);
+  ctx.rotate(Math.sin(t*.008)*.08);
+  const leafGrad=ctx.createRadialGradient(0,0,10,0,0,leafScale);
+  leafGrad.addColorStop(0,'rgba(100,220,80,0.35)');
+  leafGrad.addColorStop(.6,'rgba(50,180,60,0.18)');
+  leafGrad.addColorStop(1,'rgba(20,100,30,0.05)');
   ctx.beginPath();
-  ctx.moveTo(0,H*.5);
-  for(let x=0;x<W;x+=4){
-    const y=H*.5+30*Math.sin((x/W)*TAU*2-t*.04)+15*Math.sin((x/W)*TAU*4+t*.06);
-    ctx.lineTo(x,y);
+  ctx.moveTo(0,-leafScale);
+  ctx.bezierCurveTo(leafScale*.8,-leafScale*.5, leafScale*.8,leafScale*.5, 0,leafScale*.7);
+  ctx.bezierCurveTo(-leafScale*.8,leafScale*.5, -leafScale*.8,-leafScale*.5, 0,-leafScale);
+  ctx.fillStyle=leafGrad; ctx.fill();
+  ctx.strokeStyle='rgba(100,220,80,0.4)'; ctx.lineWidth=1.5; ctx.setLineDash([]); ctx.stroke();
+  // vein lines
+  ctx.strokeStyle='rgba(150,255,120,0.25)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(0,-leafScale*.8); ctx.lineTo(0,leafScale*.6); ctx.stroke();
+  for(let v=1;v<=4;v++){
+    const vy=-leafScale*.5+v*leafScale*.25;
+    const vx=leafScale*.5*(1-Math.abs(vy/leafScale));
+    ctx.beginPath(); ctx.moveTo(0,vy); ctx.lineTo(vx,vy+leafScale*.12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,vy); ctx.lineTo(-vx,vy+leafScale*.12); ctx.stroke();
   }
-  ctx.strokeStyle='rgba(95,96,245,0.6)'; ctx.lineWidth=2; ctx.setLineDash([]); ctx.stroke();
-  // labels
-  ctx.fillStyle='rgba(200,245,96,.5)'; ctx.font='10px Syne,sans-serif';
-  ctx.fillText('Luminary Energy Dashboard', 20, 30);
-}
-
-function drawPortfolio2(ctx,W,H,t){
-  ctx.clearRect(0,0,W,H);
-  const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#0f0a1a'); bg.addColorStop(1,'#1a0f0a');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // concentric rings
-  for(let i=6;i>0;i--){
-    const r=(i/6)*Math.min(W,H)*.42;
-    ctx.beginPath();
-    ctx.arc(W/2,H/2,r+5*Math.sin(t*.02+i),0,TAU);
-    ctx.strokeStyle=`hsla(${280+i*12},70%,70%,${.08+.05*Math.sin(t*.03+i)})`;
-    ctx.lineWidth=1; ctx.setLineDash([4,8]); ctx.stroke();
-  }
-  ctx.setLineDash([]);
-  // central logo mark
-  const s=50+8*Math.sin(t*.04);
-  ctx.save(); ctx.translate(W/2,H/2); ctx.rotate(t*.01);
-  ctx.font=`bold ${s}px Syne,sans-serif`;
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  const gText=ctx.createLinearGradient(-s,0,s,0);
-  gText.addColorStop(0,'rgba(200,245,96,.9)'); gText.addColorStop(1,'rgba(95,96,245,.9)');
-  ctx.fillStyle=gText; ctx.fillText('N',0,0);
   ctx.restore();
-  // scattered dots
-  for(let i=0;i<20;i++){
-    const a=i*(TAU/20)+t*.005;
-    const r=Math.min(W,H)*.38;
-    const x=W/2+Math.cos(a)*r, y=H/2+Math.sin(a)*r;
-    ctx.beginPath(); ctx.arc(x,y,2,0,TAU);
-    ctx.fillStyle=`hsla(${200+i*8},80%,70%,.5)`; ctx.fill();
-  }
-  ctx.fillStyle='rgba(200,245,96,.5)'; ctx.font='10px Syne,sans-serif'; ctx.textAlign='left';
-  ctx.fillText('Novara Brand Identity', 16, 24);
+
+  // scanning line (AI detection)
+  const scanY=(H*.1)+(H*.8)*((Math.sin(t*.015)+1)/2);
+  const sg=ctx.createLinearGradient(0,scanY-6,0,scanY+6);
+  sg.addColorStop(0,'transparent'); sg.addColorStop(.5,'rgba(100,220,80,0.5)'); sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg; ctx.fillRect(0,scanY-6,W,12);
+
+  // neural network dots
+  const nodes=[
+    [.15,.2],[.85,.2],[.1,.5],[.9,.5],[.15,.8],[.85,.8],
+    [.35,.35],[.65,.35],[.35,.65],[.65,.65],[.5,.15],[.5,.85]
+  ];
+  // connections
+  ctx.lineWidth=.5; ctx.setLineDash([2,4]);
+  nodes.forEach((a,i)=>nodes.forEach((b,j)=>{
+    if(j<=i)return;
+    const dx=(a[0]-b[0])*W, dy=(a[1]-b[1])*H;
+    if(Math.sqrt(dx*dx+dy*dy)>W*.35)return;
+    const alpha=.08+.06*Math.sin(t*.03+i+j);
+    ctx.beginPath(); ctx.moveTo(a[0]*W,a[1]*H); ctx.lineTo(b[0]*W,b[1]*H);
+    ctx.strokeStyle=`rgba(100,220,80,${alpha})`; ctx.stroke();
+  }));
+  ctx.setLineDash([]);
+  nodes.forEach(([nx,ny],i)=>{
+    const pulse=3+2*Math.sin(t*.05+i*1.2);
+    const g=ctx.createRadialGradient(nx*W,ny*H,0,nx*W,ny*H,pulse*2);
+    g.addColorStop(0,'rgba(100,220,80,.9)'); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(nx*W,ny*H,pulse,0,TAU); ctx.fill();
+  });
+
+  ctx.fillStyle='rgba(100,220,80,.6)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('PlantCare-AI', 16, 28);
+  ctx.fillStyle='rgba(100,220,80,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('Disease Detection · CNN · Python', 16, 46);
 }
 
-function drawPortfolio3(ctx,W,H,t){
+// 2. The Coffee Table Diary: steam + floating paper notes
+function drawCoffeeDiary(ctx,W,H,t){
   ctx.clearRect(0,0,W,H);
   const bg=ctx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,'#0a1a0f'); bg.addColorStop(1,'#050a0a');
+  bg.addColorStop(0,'#1a0e06'); bg.addColorStop(1,'#0f0804');
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  // product cards floating
-  const cards=[
-    {x:.15,y:.3,w:.3,h:.4,hue:80},
-    {x:.55,y:.2,w:.3,h:.4,hue:200},
-    {x:.35,y:.5,w:.28,h:.38,hue:140},
-  ];
-  cards.forEach((c,i)=>{
-    const offY=8*Math.sin(t*.02+i*1.5);
-    const cx=c.x*W, cy=c.y*H+offY, cw=c.w*W, ch=c.h*H;
-    ctx.save();
-    ctx.shadowColor=`hsla(${c.hue},80%,60%,.3)`;
-    ctx.shadowBlur=20;
-    const gr=ctx.createLinearGradient(cx,cy,cx+cw,cy+ch);
-    gr.addColorStop(0,`hsla(${c.hue},60%,20%,0.8)`);
-    gr.addColorStop(1,`hsla(${c.hue},40%,10%,0.9)`);
-    ctx.fillStyle=gr;
+
+  // cup body
+  const cx=W/2, cy=H*.62;
+  const cw=W*.22, ch=H*.22;
+  ctx.save();
+  ctx.translate(cx,cy);
+  // saucer
+  ctx.beginPath();
+  ctx.ellipse(0,ch*.55,cw*.75,ch*.12,0,0,TAU);
+  ctx.fillStyle='rgba(160,100,40,0.5)'; ctx.fill();
+  ctx.strokeStyle='rgba(200,140,60,0.4)'; ctx.lineWidth=1; ctx.stroke();
+  // cup
+  const cupG=ctx.createLinearGradient(-cw,0,cw,ch);
+  cupG.addColorStop(0,'rgba(180,110,40,0.7)');
+  cupG.addColorStop(1,'rgba(100,50,10,0.8)');
+  ctx.fillStyle=cupG;
+  ctx.beginPath();
+  ctx.moveTo(-cw,0); ctx.lineTo(-cw*.8,ch); ctx.lineTo(cw*.8,ch); ctx.lineTo(cw,0);
+  ctx.ellipse(0,0,cw,ch*.15,0,0,Math.PI,true);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(220,160,70,0.35)'; ctx.stroke();
+  // coffee surface
+  ctx.beginPath();
+  ctx.ellipse(0,0,cw,ch*.15,0,0,TAU);
+  const coffeeG=ctx.createRadialGradient(0,0,0,0,0,cw);
+  coffeeG.addColorStop(0,'rgba(100,55,10,0.9)');
+  coffeeG.addColorStop(1,'rgba(60,30,5,0.95)');
+  ctx.fillStyle=coffeeG; ctx.fill();
+  // handle
+  ctx.beginPath();
+  ctx.arc(cw+ch*.25,ch*.4,ch*.3,-.5,Math.PI*.8);
+  ctx.strokeStyle='rgba(180,110,40,0.6)'; ctx.lineWidth=3; ctx.stroke();
+  ctx.restore();
+
+  // steam wisps
+  for(let s=0;s<3;s++){
+    const sx=cx+(-0.5+s*.5)*cw*0.7*2;
+    const phase=t*.018+s*1.2;
     ctx.beginPath();
-    if(ctx.roundRect) ctx.roundRect(cx,cy,cw,ch,8);
-    else ctx.rect(cx,cy,cw,ch);
-    ctx.fill();
-    ctx.strokeStyle=`hsla(${c.hue},80%,60%,.3)`; ctx.lineWidth=1; ctx.setLineDash([]); ctx.stroke();
-    ctx.restore();
-    // mini bar inside card
-    for(let b=0;b<3;b++){
-      const bh=ch*.2+ch*.1*Math.sin(t*.03+b+i);
-      ctx.fillStyle=`hsla(${c.hue},80%,70%,.6)`;
-      ctx.fillRect(cx+cw*.15+b*cw*.25, cy+ch*.6-bh, cw*.15, bh);
+    ctx.moveTo(sx,cy-ch*.15);
+    for(let i=0;i<20;i++){
+      const y=cy-ch*.15-i*H*.018;
+      const x=sx+Math.sin(phase+i*.5)*14*(i/20);
+      ctx.lineTo(x,y);
     }
+    const steamAlpha=.25+.1*Math.sin(phase);
+    ctx.strokeStyle=`rgba(200,150,80,${steamAlpha})`;
+    ctx.lineWidth=2; ctx.setLineDash([]); ctx.stroke();
+  }
+
+  // floating note cards
+  [
+    {rx:.12,ry:.18,rot:-.18,label:'Blog'},
+    {rx:.72,ry:.13,rot:.14,label:'Story'},
+    {rx:.68,ry:.68,rot:-.08,label:'Ideas'},
+  ].forEach(({rx,ry,rot,label},i)=>{
+    const offY=6*Math.sin(t*.02+i*2);
+    const nx=rx*W, ny=ry*H+offY;
+    const nw=W*.14, nh=H*.12;
+    ctx.save(); ctx.translate(nx+nw/2,ny+nh/2); ctx.rotate(rot+.02*Math.sin(t*.015+i));
+    const ng=ctx.createLinearGradient(-nw/2,-nh/2,nw/2,nh/2);
+    ng.addColorStop(0,'rgba(250,235,200,0.13)'); ng.addColorStop(1,'rgba(200,170,110,0.07)');
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-nw/2,-nh/2,nw,nh,4);ctx.fillStyle=ng;ctx.fill();}
+    ctx.strokeStyle='rgba(220,190,120,0.25)'; ctx.lineWidth=1;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-nw/2,-nh/2,nw,nh,4);ctx.stroke();}
+    // lines on note
+    for(let l=1;l<4;l++){
+      ctx.beginPath(); ctx.moveTo(-nw*.35,nh*.1*(l-2)); ctx.lineTo(nw*.35,nh*.1*(l-2));
+      ctx.strokeStyle='rgba(220,190,120,0.15)'; ctx.stroke();
+    }
+    ctx.fillStyle='rgba(220,190,120,0.5)'; ctx.font='bold 8px Syne,sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label,0,0);
+    ctx.restore();
   });
-  ctx.fillStyle='rgba(200,245,96,.5)'; ctx.font='10px Syne,sans-serif';
-  ctx.fillText('Pulse Commerce Platform', 16, 24);
+
+  ctx.fillStyle='rgba(220,160,60,.7)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('The Coffee Table Diary', 14, 26);
+  ctx.fillStyle='rgba(220,160,60,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('Blog Platform · JS · HTML · CSS', 14, 42);
+}
+
+// 3. ThreadVibe Hoodies: floating hoodie silhouette + price tags
+function drawThreadVibe(ctx,W,H,t){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#0a080f'); bg.addColorStop(1,'#12091a');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // background hex grid
+  ctx.strokeStyle='rgba(150,80,255,0.05)'; ctx.lineWidth=1;
+  const hexR=28;
+  for(let row=0;row<6;row++) for(let col=0;col<8;col++){
+    const hx=col*hexR*1.73+(row%2)*hexR*.865, hy=row*hexR*1.5;
+    ctx.beginPath();
+    for(let v=0;v<6;v++){
+      const a=v*(TAU/6)-Math.PI/6;
+      ctx[v?'lineTo':'moveTo'](hx+Math.cos(a)*hexR*.8,hy+Math.sin(a)*hexR*.8);
+    }
+    ctx.closePath(); ctx.stroke();
+  }
+
+  // draw hoodie silhouette
+  const hx=W/2, hy=H*.48;
+  const hs=Math.min(W,H)*.28;
+  const bob=6*Math.sin(t*.015);
+  ctx.save(); ctx.translate(hx,hy+bob);
+  const hg=ctx.createLinearGradient(-hs,-hs,hs,hs);
+  hg.addColorStop(0,'rgba(150,80,255,0.35)'); hg.addColorStop(1,'rgba(80,40,180,0.2)');
+  // body
+  ctx.beginPath();
+  ctx.moveTo(-hs*.5,-hs*.8);
+  ctx.bezierCurveTo(-hs*.7,-hs*.6,-hs*.75,-hs*.2,-hs*.7,hs*.4);
+  ctx.lineTo(hs*.7,hs*.4);
+  ctx.bezierCurveTo(hs*.75,-hs*.2,hs*.7,-hs*.6,hs*.5,-hs*.8);
+  // collar
+  ctx.bezierCurveTo(hs*.3,-hs*.95,hs*.15,-hs,0,-hs*.85);
+  ctx.bezierCurveTo(-hs*.15,-hs,-hs*.3,-hs*.95,-hs*.5,-hs*.8);
+  ctx.fillStyle=hg; ctx.fill();
+  ctx.strokeStyle='rgba(180,100,255,0.45)'; ctx.lineWidth=1.5; ctx.setLineDash([]); ctx.stroke();
+  // hood strings
+  ctx.beginPath(); ctx.moveTo(-hs*.08,-hs*.82); ctx.lineTo(-hs*.06,-hs*.5);
+  ctx.beginPath(); ctx.moveTo(hs*.08,-hs*.82); ctx.lineTo(hs*.06,-hs*.5);
+  ctx.strokeStyle='rgba(180,100,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+  // pocket
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(-hs*.3,hs*.05,hs*.6,hs*.25,8);
+  else ctx.rect(-hs*.3,hs*.05,hs*.6,hs*.25);
+  ctx.strokeStyle='rgba(180,100,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.restore();
+
+  // price tag floating
+  const tagX=W*.72, tagY=H*.28+4*Math.sin(t*.02);
+  ctx.save(); ctx.translate(tagX,tagY); ctx.rotate(.12);
+  ctx.fillStyle='rgba(200,245,96,0.12)';
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-24,-16,48,32,4);ctx.fill();}
+  ctx.strokeStyle='rgba(200,245,96,0.4)'; ctx.lineWidth=1;
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-24,-16,48,32,4);ctx.stroke();}
+  ctx.fillStyle='rgba(200,245,96,.8)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('$49',0,0);
+  ctx.restore();
+
+  ctx.fillStyle='rgba(180,100,255,.7)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('ThreadVibe Hoodies', 14, 26);
+  ctx.fillStyle='rgba(180,100,255,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('E-Commerce · JavaScript', 14, 42);
+}
+
+// 4. Sliding Tile: animated puzzle grid
+function drawSlidingTile(ctx,W,H,t){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#080f1a'); bg.addColorStop(1,'#04080f');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  const gridN=3, pad=12;
+  const gsize=Math.min(W,H)*.58;
+  const cellSize=(gsize-pad*(gridN+1))/gridN;
+  const gx=(W-gsize)/2, gy=(H-gsize)/2+10;
+
+  // board bg
+  ctx.fillStyle='rgba(30,60,100,0.3)';
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(gx,gy,gsize,gsize,10);ctx.fill();}
+  else ctx.fillRect(gx,gy,gsize,gsize);
+
+  // animated tile positions (cycle through a sliding animation)
+  const emptyPos={r:Math.floor(t/120)%3, c:(Math.floor(t/40)%3)};
+  for(let r=0;r<gridN;r++) for(let c=0;c<gridN;c++){
+    if(r===emptyPos.r&&c===emptyPos.c) continue;
+    const num=r*gridN+c+1;
+    const tx2=gx+pad+(c*(cellSize+pad));
+    const ty2=gy+pad+(r*(cellSize+pad));
+    const slide=4*Math.sin(t*.04+num);
+    const tg=ctx.createLinearGradient(tx2,ty2,tx2+cellSize,ty2+cellSize);
+    tg.addColorStop(0,`hsla(${200+num*15},70%,35%,0.85)`);
+    tg.addColorStop(1,`hsla(${200+num*15},50%,20%,0.9)`);
+    ctx.fillStyle=tg;
+    ctx.shadowColor=`hsla(${200+num*15},80%,60%,.3)`; ctx.shadowBlur=8;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(tx2,ty2+slide,cellSize,cellSize,6);ctx.fill();}
+    else ctx.fillRect(tx2,ty2+slide,cellSize,cellSize);
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=`hsla(${200+num*15},80%,60%,.35)`; ctx.lineWidth=1;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(tx2,ty2+slide,cellSize,cellSize,6);ctx.stroke();}
+    ctx.fillStyle=`hsla(${200+num*15},90%,85%,.9)`;
+    ctx.font=`bold ${cellSize*.35}px Syne,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(num,tx2+cellSize/2,ty2+slide+cellSize/2);
+  }
+
+  ctx.fillStyle='rgba(100,180,255,.7)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Sliding Tile Puzzle', 14, 26);
+  ctx.fillStyle='rgba(100,180,255,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('Game · Python', 14, 42);
+}
+
+// 5. Password Manager: animated lock + key stream
+function drawPasswordMgr(ctx,W,H,t){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#0f0a06'); bg.addColorStop(1,'#1a1206');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // scrolling password dots rows
+  for(let row=0;row<5;row++){
+    const y=H*.25+row*H*.12;
+    const offset=(t*.8+row*40)%(W+80)-40;
+    for(let d=0;d<12;d++){
+      const dx=offset+d*22, a=.15+.1*Math.sin(t*.04+row+d);
+      ctx.beginPath(); ctx.arc(dx,y,3,0,TAU);
+      ctx.fillStyle=`rgba(255,180,40,${a})`; ctx.fill();
+    }
+  }
+
+  // central lock
+  const lx=W/2, ly=H*.48;
+  const ls=Math.min(W,H)*.17;
+  const pulse=1+.04*Math.sin(t*.05);
+  const locked=Math.floor(t/180)%2===0;
+
+  ctx.save(); ctx.translate(lx,ly); ctx.scale(pulse,pulse);
+  // lock body
+  const lg=ctx.createLinearGradient(-ls,-ls*.5,ls,ls*.8);
+  lg.addColorStop(0,'rgba(255,180,40,0.45)'); lg.addColorStop(1,'rgba(180,100,10,0.3)');
+  ctx.fillStyle=lg;
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-ls,-ls*.4,ls*2,ls*1.6,ls*.2);ctx.fill();}
+  ctx.strokeStyle='rgba(255,180,40,0.6)'; ctx.lineWidth=2; ctx.setLineDash([]);
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(-ls,-ls*.4,ls*2,ls*1.6,ls*.2);ctx.stroke();}
+  // shackle
+  const shackleOpen = locked ? 0 : -ls*.5;
+  ctx.beginPath();
+  ctx.arc(0,-ls*.4+shackleOpen, ls*.6, Math.PI, 0);
+  ctx.strokeStyle='rgba(255,180,40,0.6)'; ctx.lineWidth=ls*.22; ctx.stroke();
+  // keyhole
+  ctx.beginPath(); ctx.arc(0,ls*.3,ls*.22,0,TAU);
+  ctx.fillStyle='rgba(255,180,40,0.25)'; ctx.fill();
+  ctx.strokeStyle='rgba(255,180,40,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillRect(-ls*.06,ls*.3,ls*.12,ls*.35);
+  ctx.restore();
+
+  // glow
+  const glowG=ctx.createRadialGradient(lx,ly,0,lx,ly,ls*2.5);
+  glowG.addColorStop(0,'rgba(255,180,40,0.08)'); glowG.addColorStop(1,'transparent');
+  ctx.fillStyle=glowG; ctx.fillRect(0,0,W,H);
+
+  ctx.fillStyle='rgba(255,180,40,.7)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Password Manager', 14, 26);
+  ctx.fillStyle='rgba(255,180,40,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('Security · Python · Encryption', 14, 42);
+}
+
+// 6. Portfolio Site: browser mockup + floating elements
+function drawPortfolioSite(ctx,W,H,t){
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#080a14'); bg.addColorStop(1,'#0a0810');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // browser window mockup
+  const bx=W*.08, by=H*.15, bw=W*.84, bh=H*.68;
+  ctx.fillStyle='rgba(20,20,35,0.8)';
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx,by,bw,bh,8);ctx.fill();}
+  ctx.strokeStyle='rgba(200,245,96,0.2)'; ctx.lineWidth=1;
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx,by,bw,bh,8);ctx.stroke();}
+  // browser bar
+  ctx.fillStyle='rgba(30,30,50,0.9)';
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx,by,bw,bh*.14,8);ctx.fill();}
+  // traffic lights
+  [{c:'rgba(255,90,80,.8)'},{c:'rgba(255,200,50,.8)'},{c:'rgba(80,200,80,.8)'}].forEach(({c},i)=>{
+    ctx.beginPath(); ctx.arc(bx+18+i*16,by+bh*.07,4,0,TAU);
+    ctx.fillStyle=c; ctx.fill();
+  });
+  // URL bar
+  ctx.fillStyle='rgba(255,255,255,0.05)';
+  if(ctx.roundRect){ctx.beginPath();ctx.roundRect(bx+bw*.25,by+bh*.03,bw*.5,bh*.08,4);ctx.fill();}
+  ctx.fillStyle='rgba(200,245,96,.4)'; ctx.font='8px DM Sans,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('itzdhanvi.github.io/PortFolio_',bx+bw*.27,by+bh*.085);
+
+  // site content area (animated lines = content)
+  const contentY=by+bh*.18;
+  // hero text blocks
+  ctx.fillStyle='rgba(200,245,96,0.5)';
+  ctx.fillRect(bx+bw*.1, contentY+H*.02, bw*.35, H*.025);
+  ctx.fillStyle='rgba(255,255,255,0.15)';
+  ctx.fillRect(bx+bw*.1, contentY+H*.06, bw*.55, H*.015);
+  ctx.fillRect(bx+bw*.1, contentY+H*.09, bw*.45, H*.015);
+  // skill chips
+  ['HTML','CSS','JS','Python'].forEach((s,i)=>{
+    const cx2=bx+bw*.1+i*bw*.19;
+    ctx.fillStyle='rgba(200,245,96,0.1)';
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(cx2,contentY+H*.14,bw*.16,H*.04,20);ctx.fill();}
+    ctx.fillStyle='rgba(200,245,96,0.5)'; ctx.font='7px Syne,sans-serif'; ctx.textAlign='center';
+    ctx.fillText(s,cx2+bw*.08,contentY+H*.163);
+  });
+  // project cards placeholder
+  for(let c=0;c<3;c++){
+    const cardX=bx+bw*.06+c*bw*.31, cardY=contentY+H*.22;
+    const cw2=bw*.26, ch2=H*.18;
+    const cardPhase=Math.sin(t*.02+c);
+    ctx.fillStyle=`rgba(30,30,55,${.6+.1*cardPhase})`;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(cardX,cardY,cw2,ch2,4);ctx.fill();}
+    ctx.strokeStyle=`rgba(200,245,96,${.1+.08*cardPhase})`; ctx.lineWidth=1;
+    if(ctx.roundRect){ctx.beginPath();ctx.roundRect(cardX,cardY,cw2,ch2,4);ctx.stroke();}
+    ctx.fillStyle='rgba(200,245,96,0.35)';
+    ctx.fillRect(cardX+cw2*.1,cardY+ch2*.7,cw2*.8,ch2*.08);
+  }
+
+  ctx.fillStyle='rgba(200,245,96,.7)'; ctx.font='bold 11px Syne,sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Portfolio Website', 14, 26);
+  ctx.fillStyle='rgba(200,245,96,.35)'; ctx.font='10px DM Sans,sans-serif';
+  ctx.fillText('Personal Site · HTML · CSS', 14, 42);
 }
 
 // ─────── TESTIMONIAL AVATARS ───────
